@@ -22,7 +22,7 @@ plt.axhline(
     y=average,
     color="red",
     linestyle="--",
-    label=f"Average = {average:.2f} g/mL ± {standard_deviation:.2f} g/mL"
+    label=f"Average = {average:.1f} g/mL ± {standard_deviation:.1f} g/mL"
 )
 # Add true value line
 plt.axhline(
@@ -43,9 +43,10 @@ plt.title("Density of water at 25°C obtained with the graduate cylinder")
 for i, value in enumerate(measurements):
     plt.text(i, value + 0.01, str(value), ha="right")
 
-print(f"Average = {average:.2f} g/mL")
-print(f"Standard deviation = {standard_deviation:.2f} g/mL")
+print(f"Average = {average:.1f} g/mL")
+print(f"Standard deviation = {standard_deviation:.1f} g/mL")
 
 plt.legend(fontsize=8)
 plt.show()
+
 
