@@ -29,6 +29,10 @@ inverse_molar_volume = 1 / molar_volume  # mol/m^3
 temperature = np.array([100, 200, 300, 500])
 
 # -----------------------------
+# Temperature (K)
+# -----------------------------
+inverse_temperature = 1/temperature
+# -----------------------------
 # Pressure data (atm)
 # Rows correspond to lengths
 # Columns correspond to temperatures
@@ -47,60 +51,126 @@ pressure_Pa = pressure_atm * 101325
 # -----------------------------
 # Create three subplots
 # -----------------------------
-fig, ax = plt.subplots(1, 3, figsize=(20, 6))
+fig, ax = plt.subplots(2, 2, figsize=(10, 5))
 
 # ==========================================
 # Subplot 1: P vs Vm
 # ==========================================
 for i in range(len(length)):
-    ax[0].plot(molar_volume[i],
+    ax[0,0].plot(molar_volume[i],
                pressure_Pa[:, 0][i],
                'o-')
 
 # Plot each temperature
 for j, T in enumerate(temperature):
-    ax[0].plot(molar_volume,
+    ax[0,0].plot(molar_volume,
                pressure_Pa[:, j],
                'o-',
                label=f'{T} K')
 
-ax[0].set_xlabel('Molar Volume (m$^3$/mol)')
-ax[0].set_ylabel('Pressure (Pa)')
-ax[0].set_title('Pressure vs. Molar Volume')
-ax[0].grid(True, alpha=0.3)
-ax[0].legend()
+ax[0,0].set_xlabel('Molar Volume (m$^3$/mol)')
+ax[0,0].set_ylabel('Pressure (Pa)')
+ax[0,0].set_title('Pressure vs. Molar Volume')
+ax[0,0].grid(True, alpha=0.3)
+ax[0,0].legend()
 
 # ==========================================
 # Subplot 2: P vs 1/Vm
 # ==========================================
 for j, T in enumerate(temperature):
-    ax[1].plot(inverse_molar_volume,
+    x = inverse_molar_volume
+    y = pressure_Pa[:, j]
+
+    # Linear fit: P = m(1/Vm) + b
+    m, b = np.polyfit(x, y, 1)
+
+    # Calculate R^2
+    y_fit = m * x + b
+    ss_res = np.sum((y - y_fit) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r2 = 1 - ss_res / ss_tot
+
+    ax[0,1].plot(inverse_molar_volume,
                pressure_Pa[:, j],
                'o-',
                label=f'{T} K')
 
-ax[1].set_xlabel(r'$1/V_m$ (mol/m$^3$)')
-ax[1].set_ylabel('Pressure (Pa)')
-ax[1].set_title(r'Pressure vs. inverse molar volume')
-ax[1].grid(True, alpha=0.3)
-ax[1].legend()
+# Equation text
+    equation = f'P = {m:.2f}(1/Vm) {b:+.1f}'
+
+    # Position text near the corresponding line
+    ax[0,1].text(
+        x[0] * 0.5,
+        y_fit[1],
+        equation,
+        fontsize=9,
+        ha='left',
+        va='top'
+    )
+
+ax[0,1].set_xlabel(r'$1/V_m$ (mol/m$^3$)')
+ax[0,1].set_ylabel('Pressure (Pa)')
+ax[0,1].set_title(r'Pressure vs. inverse molar volume')
+ax[0,1].grid(True, alpha=0.3)
+ax[0,1].legend()
 
 # ==========================================
 # Subplot 3: P vs T
 # ==========================================
 for i, Vm in enumerate(molar_volume):
-    ax[2].plot(temperature,
+    x = temperature
+    y = pressure_Pa[i, :]
+
+    # Linear fit: P = m(1/Vm) + b
+    m, b = np.polyfit(x, y, 1)
+
+    # Calculate R^2
+    y_fit = m * x + b
+    ss_res = np.sum((y - y_fit) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r2 = 1 - ss_res / ss_tot
+
+    # Equation text
+    equation = f'P = {m:.2f}(T) {b:+.1f}'
+
+    # Position text near the corresponding line
+    ax[1,0].text(
+        x[2],
+        y_fit[2],
+        equation,
+        fontsize=9,
+        ha='left',
+        va='top'
+    )
+
+    ax[1,0].plot(temperature,
                pressure_Pa[i, :],
                'o-',
                label=f'$V_m$ = {Vm:.2e} m$^3$/mol')
 
-ax[2].set_xlabel('Temperature (K)')
-ax[2].set_ylabel('Pressure (Pa)')
-ax[2].set_title('Pressure vs. Temperature')
-ax[2].grid(True, alpha=0.3)
-ax[2].legend(fontsize=8)
+ax[1,0].set_xlabel('Temperature (K)')
+ax[1,0].set_ylabel('Pressure (Pa)')
+ax[1,0].set_title('Pressure vs. Temperature')
+ax[1,0].grid(True, alpha=0.3)
+ax[1,0].legend(fontsize=8)
 
+
+# ==========================================
+# Subplot 4: P vs 1/T
+# ==========================================
+for i, Vm in enumerate(molar_volume):
+    ax[1,1].plot(inverse_temperature,
+               pressure_Pa[i, :],
+               'o-',
+               label=f'$V_m$ = {Vm:.2e} m$^3$/mol')
+
+ax[1,1].set_xlabel('Inverse Temperature (1/K)')
+ax[1,1].set_ylabel('Pressure (Pa)')
+ax[1,1].set_title('Pressure vs. Inverse Temperature')
+ax[1,1].grid(True, alpha=0.3)
+ax[1,1].legend(fontsize=8)
 plt.tight_layout()
 plt.show()
+plt.savefig("high_res_plot.png", dpi=300, bbox_inches="tight")
 
 
